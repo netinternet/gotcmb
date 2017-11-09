@@ -1,5 +1,5 @@
 # gotcmb
-Exchange Rates Central Bank of Turkey Edit
+Exchange Rates Central Bank of Turkey
 
 ## Usage
 
