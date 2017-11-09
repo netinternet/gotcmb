@@ -7,7 +7,7 @@ Exchange Rates Central Bank of Turkey
 go get -u github.com/netinternet/gotcmb
 ```
 
-## Exemple
+## Example
 
 ```go
 package main
