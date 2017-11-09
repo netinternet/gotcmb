@@ -2,7 +2,6 @@ package gotcmb
 
 import (
 	"encoding/xml"
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -35,12 +34,10 @@ type Currency struct {
 func Kur(code string) (float64, error) {
 	kurData, err := httplib.Get("http://www.tcmb.gov.tr/kurlar/today.xml").Bytes()
 	if err != nil {
-		fmt.Println("unmarshal")
 		return 0, err
 	}
 	t := Tarih_Date{}
 	if err := xml.Unmarshal(kurData, &t); err != nil {
-		fmt.Println("unmarshal")
 		return 0, err
 	}
 	var kur string
