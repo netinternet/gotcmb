@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
-	"gotcmb"
 )
 
 func main() {
-	usd, err := gotcmb.Kur("USD")
-	if err != nil {
-		fmt.Println("Hata: Kur cekilemedi")
-		return
+	data := make(map[string]string)
+	data["osman"] = "arzu"
+	data["makal"] = "rzyaeva"
+	for i, v := range data {
+		fmt.Println(data[v])
+		fmt.Println(data[i])
 	}
-	fmt.Printf("1 Amerikan Doları %v Türk Lirasıdır\n", usd)
 }
