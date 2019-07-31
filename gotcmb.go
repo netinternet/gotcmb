@@ -50,3 +50,23 @@ func Kur(code string) (float64, error) {
 	format, err := strconv.ParseFloat(kur, 64)
 	return format, err
 }
+
+func ForexSelling() (map[string]float64, error) {
+	kurData, err := httplib.Get("http://www.tcmb.gov.tr/kurlar/today.xml").Bytes()
+	if err != nil {
+		return nil, err
+	}
+	t := Tarih_Date{}
+	if err := xml.Unmarshal(kurData, &t); err != nil {
+		return nil, err
+	}
+	m := make(map[string]float64, len(t.Currency))
+	for _, v := range t.Currency {
+		value, err := strconv.ParseFloat(v.ForexSelling, 64)
+		if err != nil || value == 0 {
+			continue
+		}
+		m[v.Kod] = value
+	}
+	return m, err
+}
