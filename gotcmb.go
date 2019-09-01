@@ -1,11 +1,14 @@
 package gotcmb
 
 import (
+	"context"
 	"encoding/xml"
+	"fmt"
+	"io/ioutil"
+	"net"
+	"net/http"
 	"strconv"
 	"strings"
-
-	"github.com/astaxie/beego/httplib"
 )
 
 type Tarih_Date struct {
@@ -31,15 +34,49 @@ type Currency struct {
 	CrossRateOther  string `xml:"CrossRateOther"`
 }
 
-func Kur(code string) (float64, error) {
-	kurData, err := httplib.Get("http://www.tcmb.gov.tr/kurlar/today.xml").Bytes()
+func getTarihDate() (*Tarih_Date, error) {
+	// The server does not respond on IPv6. Request it over IPv4 only.
+
+	addr, err := net.ResolveIPAddr("ip4", "www.tcmb.gov.tr")
 	if err != nil {
-		return 0, err
+		return nil, err
+	}
+	if addr == nil {
+		return nil, fmt.Errorf("no addresssed for www.tcmb.gov.tr")
+	}
+	ip := addr.String()
+
+	transport := *http.DefaultTransport.(*http.Transport)
+	defaultDialContext := transport.DialContext
+	transport.DialContext = func(ctx context.Context, network, address string) (net.Conn, error) {
+		return defaultDialContext(ctx, "tcp4", ip+":80")
+	}
+
+	client := &http.Client{Transport: &transport}
+
+	res, err := client.Get("http://www.tcmb.gov.tr/kurlar/today.xml")
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+	kurData, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
 	}
 	t := Tarih_Date{}
 	if err := xml.Unmarshal(kurData, &t); err != nil {
+		return nil, err
+	}
+
+	return &t, nil
+}
+
+func Kur(code string) (float64, error) {
+	t, err := getTarihDate()
+	if err != nil {
 		return 0, err
 	}
+
 	var kur string
 	Req := strings.ToUpper(code)
 	for i, v := range t.Currency {
@@ -52,14 +89,11 @@ func Kur(code string) (float64, error) {
 }
 
 func ForexSelling() (map[string]float64, error) {
-	kurData, err := httplib.Get("http://www.tcmb.gov.tr/kurlar/today.xml").Bytes()
+	t, err := getTarihDate()
 	if err != nil {
 		return nil, err
 	}
-	t := Tarih_Date{}
-	if err := xml.Unmarshal(kurData, &t); err != nil {
-		return nil, err
-	}
+
 	m := make(map[string]float64, len(t.Currency))
 	for _, v := range t.Currency {
 		value, err := strconv.ParseFloat(v.ForexSelling, 64)
