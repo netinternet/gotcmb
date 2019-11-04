@@ -49,12 +49,12 @@ func getTarihDate() (*Tarih_Date, error) {
 	transport := *http.DefaultTransport.(*http.Transport)
 	defaultDialContext := transport.DialContext
 	transport.DialContext = func(ctx context.Context, network, address string) (net.Conn, error) {
-		return defaultDialContext(ctx, "tcp4", ip+":80")
+		return defaultDialContext(ctx, "tcp4", ip+":443")
 	}
 
 	client := &http.Client{Transport: &transport}
 
-	res, err := client.Get("http://www.tcmb.gov.tr/kurlar/today.xml")
+	res, err := client.Get("https://www.tcmb.gov.tr/kurlar/today.xml")
 	if err != nil {
 		return nil, err
 	}
