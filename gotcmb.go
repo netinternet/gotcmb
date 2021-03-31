@@ -46,15 +46,14 @@ func getTarihDate() (*Tarih_Date, error) {
 		return nil, fmt.Errorf("no addresssed for www.tcmb.gov.tr")
 	}
 	ip := addr.String()
-	transport := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
+	transport := *http.DefaultTransport.(*http.Transport)
+	transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	defaultDialContext := transport.DialContext
 	transport.DialContext = func(ctx context.Context, network, address string) (net.Conn, error) {
 		return defaultDialContext(ctx, "tcp4", ip+":443")
 	}
 
-	client := &http.Client{Transport: transport}
+	client := &http.Client{Transport: &transport}
 
 	res, err := client.Get("https://www.tcmb.gov.tr/kurlar/today.xml")
 	if err != nil {
